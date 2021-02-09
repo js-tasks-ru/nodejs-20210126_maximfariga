@@ -1,9 +1,7 @@
 const fs = require('fs');
 const LimitSizeStream = require('./LimitSizeStream')
 
-const FILE_LIMIT = 1048576; // Bytes
-
-
+const FILE_LIMIT = 1048576;
 
 const removeFile = (filePath) => {
   fs.unlink(filePath, () => {})

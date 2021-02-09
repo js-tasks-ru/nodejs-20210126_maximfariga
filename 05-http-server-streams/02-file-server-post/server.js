@@ -1,6 +1,5 @@
 const { URL } = require('url');
 const { Server } = require('http');
-const path = require('path');
 const checkConditions = require('./checkConditions')
 
 const server = new Server();
