@@ -1,16 +1,18 @@
-const url = require('url');
-const http = require('http');
-const path = require('path');
+const { URL } = require('url');
+const { Server } = require('http');
+const checkConditions = require('./checkConditions')
 
-const server = new http.Server();
+const server = new Server();
 
 server.on('request', (req, res) => {
-  const pathname = url.parse(req.url).pathname.slice(1);
-
-  const filepath = path.join(__dirname, 'files', pathname);
+  const baseURL = `${req.protocol || 'http://'}${req.headers.host}`
+  const pathname = new URL(req.url, baseURL).pathname.slice(1);
 
   switch (req.method) {
     case 'DELETE':
+      if (pathname.length) {
+        checkConditions(pathname, res, req)
+      }
 
       break;
 

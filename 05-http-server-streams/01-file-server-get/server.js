@@ -1,16 +1,18 @@
-const url = require('url');
+const { URL } = require('url');
 const http = require('http');
-const path = require('path');
+const checkPath = require('./chekPath');
 
 const server = new http.Server();
 
 server.on('request', (req, res) => {
-  const pathname = url.parse(req.url).pathname.slice(1);
-
-  const filepath = path.join(__dirname, 'files', pathname);
+  const baseURL = `${req.protocol || 'http://'}${req.headers.host}`
+  const pathname = new URL(req.url, baseURL).pathname.slice(1);
 
   switch (req.method) {
     case 'GET':
+      if (pathname.length) {
+        checkPath(pathname, res, req);
+      }
 
       break;
 
