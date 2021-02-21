@@ -1,52 +1,54 @@
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+const productMapper = require('../mappers/product');
 
-module.exports.handleInvalidObjectId = async function handleInvalidObjectId(ctx, next) {
+module.exports.handleInvalidObjectId = function handleInvalidObjectId(ctx, next) {
   if (!mongoose.Types.ObjectId.isValid(ctx.params.id)) {
     ctx.status = 400;
     ctx.body = 'Invalid id';
-
     return;
   }
 
-  next();
+  return next();
 };
 
 module.exports.productsBySubcategory = async function productsBySubcategory(ctx, next) {
-  ctx.body = {};
+  const {subcategory} = ctx.query;
+
+  if (!subcategory) {
+    return next();
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(subcategory)) {
+    ctx.status = 400;
+    ctx.body = 'Invalid subcategory id';
+    return;
+  }
+
+  const productsDb = await Product.find({subcategory});
+  const products = productsDb.map((product) => productMapper(product)) || [];
+
+  ctx.body = {products};
 };
 
 module.exports.productList = async function productList(ctx, next) {
-  ctx.body = {};
+  const productsDb = await Product.find();
+  const products = productsDb.map((product) => productMapper(product)) || [];
+
+  ctx.body = {products};
 };
 
 module.exports.productById = async function productById(ctx, next) {
-  const product = await Product.findById(ctx.params.id);
-  console.log('TRYING TO FIND');
+  const productDb = await Product.findById(ctx.params.id);
 
-  if (!product) {
-    console.log('NOT FOUND');
+  if (!productDb) {
     ctx.status = 404;
     ctx.body = 'Not Found';
   } else {
-    console.log('CLIENT ID: ', ctx.params.id);
-    console.log('PRODUCT: ', product);
-    const formattedObj = {
-      id: product._id,
-      title: product.title,
-      images: product.images,
-      category: product.category,
-      subcategory: product.subcategory,
-      price: product.price,
-      description: product.description,
-    };
+    const product = productMapper(productDb);
 
-    console.log('Formatted product:', formattedObj);
-
-    // ctx.body = {product: formattedObj};
-    ctx.status = 200;
-    ctx.body = {title: 'MAX'};
+    ctx.body = {product};
   }
 };
 
